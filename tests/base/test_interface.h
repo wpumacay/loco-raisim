@@ -23,7 +23,52 @@
 namespace raisim
 {
 
+    enum class eShapeType
+    {
+        NONE = 0,
+        BOX,
+        SPHERE, 
+        CYLINDER, 
+        CAPSULE, 
+        MESH
+    };
+
+    enum class eJointType
+    {
+        FREE = 0,
+        REVOLUTE,
+        PRISMATIC,
+        BALL,
+        PLANAR,
+        FIXED
+    };
+
+    struct ShapeData
+    {
+        std::string     name;
+        tysoc::TVec3    localPos;   // relative position w.r.t. parent body
+        tysoc::TMat3    localRot;   // relative rotation w.r.t. parent body
+        eShapeType      type;       // type of collision shape of this body
+        tysoc::TVec3    size;       // size of the collision shape of this body
+        tysoc::TVec3    color;      // color (rgb) of the renderable associated with this shape
+    };
+
+    struct JointData
+    {
+        std::string     name;
+        tysoc::TVec3    pos;                // relative position w.r.t. parent body
+        eJointType      type;               // type of joint to be constructed
+        tysoc::TVec3    axis;               // axis of joint to be constructed
+        tysoc::TVec2    limits;             // motion range (lo==hi: fixed, lo>hi: continuous, lo<hi: limited)
+    };
+
     std::vector< std::string > collectAvailableModels( const std::string& folderpath );
+
+    Eigen::Vector3d toEigenVec3( const tysoc::TVec3& vec );
+    Eigen::Matrix3d toEigenMat3( const tysoc::TMat3& mat );
+
+    tysoc::TVec3 fromEigenVec3( const Eigen::Vector3d& vec );
+    tysoc::TMat3 fromEigenMat3( const Eigen::Matrix3d& mat );
 
     /**
     *   Wrapper for a single body with geometries as children
@@ -32,20 +77,18 @@ namespace raisim
     {
         protected :
 
-        std::string     m_bodyName;
-        tysoc::TVec3    m_bodyWorldPos;
-        tysoc::TMat3    m_bodyWorldRot;
-        tysoc::TMat4    m_bodyWorldTransform;
+        std::string     m_name;
+        tysoc::TVec3    m_worldPos;
+        tysoc::TMat3    m_worldRot;
+        tysoc::TMat4    m_worldTransform;
 
-        std::vector< engine::LIRenderable* > m_geomsGraphics;
+        engine::LScene*         m_graphicsScene;
+        engine::LIRenderable*   m_graphicsObj;
 
-        /* Grabs all geometries associated with this body */
-        void _grabGeometries();
+        raisim::World*              m_raisimWorldPtr;
+        raisim::SingleBodyObject*   m_raisimBodyPtr;
 
-        /* Builds a geometry's graphics */
-        engine::LIRenderable* _buildGeomGraphics( const std::string& type,
-                                                  const tysoc::TVec3& size,
-                                                  const tysoc::TVec4& color );
+        bool m_isAlive;
 
         public :
 
@@ -55,14 +98,19 @@ namespace raisim
         /* Frees|unlinks all related resources of the currently wrapped body */
         ~SimBody() {}
 
+        void build( raisim::World* raisimWorldPtr,
+                    engine::LScene* graphicsScene,
+                    const ShapeData& shapeData,
+                    bool isFree );
+
         /* Updates all internal information by quering the backend */
-        void update() {}
+        void update();
 
         /* Returns the unique name of the wrapped body */
-        std::string name() { return m_bodyName; }
+        std::string name() { return m_name; }
 
-        /* Returns all meshes linked to each geometry */
-        std::vector< engine::LIRenderable* > geomsGraphics() { return m_geomsGraphics; }
+        /* Returns the graphics resource of this wrapper */
+        engine::LIRenderable* graphics() { return m_graphicsObj; }
 
         /* Resets the body to some configuration */
         void reset() {}
@@ -70,14 +118,36 @@ namespace raisim
         /* Prints some debug information */
         void print() {}
 
+        /* Sets the position of this body */
+        void setPosition( const tysoc::TVec3& position );
+
+        /* Sets the orientation of this body */
+        void setOrientation( const tysoc::TMat3& orientation );
+
+        /* Sets the alive-mode of this body */
+        void setAlive( bool mode ) { m_isAlive = mode; }
+
+        /* Returns whether or not this body is still alive */
+        bool alive() { return m_isAlive; }
+
         /* Returns the world-position of the body */
-        tysoc::TVec3 position() { return m_bodyWorldPos; }
+        tysoc::TVec3 position() { return m_worldPos; }
 
         /* Returns the world-orientation of the body */
-        tysoc::TMat3 orientation() { return m_bodyWorldRot; }
+        tysoc::TMat3 orientation() { return m_worldRot; }
 
         /* Returns the world transform of the body */
-        tysoc::TMat4 worldTransform() { return m_bodyWorldTransform; }
+        tysoc::TMat4 worldTransform() { return m_worldTransform; }
+    };
+
+    class SimLink
+    {
+
+    };
+
+    class SimAgent
+    {
+
     };
 
     class ITestApplication
@@ -85,9 +155,9 @@ namespace raisim
 
         protected :
 
-        std::shared_ptr<raisim::World> m_raisimWorldPtr;
+        raisim::World* m_raisimWorldPtr;
 
-        engine::LApp* m_graphicsApp;
+        engine::LApp*   m_graphicsApp;
         engine::LScene* m_graphicsScene;
 
         std::vector< SimBody* >             m_simBodies;
@@ -124,10 +194,19 @@ namespace raisim
         void step();
         void togglePause();
 
+        SimBody* createSingleBody( const ShapeData& shapeData, bool isFree );
+
         bool isTerminated() { return m_isTerminated; }
 
         /* Returns a body-wrapper of a body with a specific name in the simulation */
         SimBody* getBody( const std::string& name );
     };
 
+}
+
+// some to-string conversion
+namespace std
+{
+    std::string to_string( const raisim::eShapeType& type );
+    std::string to_string( const raisim::eJointType& type );
 }
