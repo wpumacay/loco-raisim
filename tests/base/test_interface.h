@@ -33,6 +33,8 @@ namespace raisim
         MESH
     };
 
+    eShapeType fromRaisimShapeType( raisim::Shape::Type type );
+
     enum class eJointType
     {
         FREE = 0,
@@ -42,6 +44,8 @@ namespace raisim
         PLANAR,
         FIXED
     };
+
+    eJointType fromRaisimJointType( raisim::Joint::Type type );
 
     struct ShapeData
     {
@@ -142,12 +146,97 @@ namespace raisim
 
     class SimLink
     {
+        private :
 
+        int             m_localIndx;
+        std::string     m_name;
+
+        tysoc::TVec3    m_worldPos;
+        tysoc::TMat3    m_worldRot;
+        tysoc::TMat4    m_worldTransform;
+
+        raisim::Vec<3>      m_raisimPosition;
+        raisim::Mat<3, 3>   m_raisimRotation;
+
+        engine::LScene*             m_graphicsScene;
+        raisim::ArticulatedSystem*  m_raisimASystemPtr;
+
+        std::vector< ShapeData >                m_colsShapeData;
+        std::vector< tysoc::TMat4 >             m_colsLocalTransforms;
+        std::vector< engine::LIRenderable* >    m_graphicsColsObjs;
+
+        public :
+
+        SimLink( const std::string& name,
+                 raisim::ArticulatedSystem* raisimASystemPtr,
+                 engine::LScene* graphicsScene );
+
+        ~SimLink() {}
+
+        void reset() {}
+
+        void update();
+
+        std::string name() { return m_name; }
     };
 
+    /**
+    *   A wrapper of an agent|articulated-system parsed from 
+    *   a urdf file. This class just wraps the functionality
+    *   and provides helper accessors to the functionality of
+    *   the backend (just to play around).
+    */
     class SimAgent
     {
+        private :
 
+        std::string     m_name;
+        tysoc::TVec3    m_worldPos;
+        tysoc::TMat3    m_worldRot;
+        tysoc::TMat4    m_worldTransform;
+
+        engine::LScene*             m_graphicsScene;
+        raisim::World*              m_raisimWorldPtr;
+        raisim::ArticulatedSystem*  m_raisimASystemPtr;
+
+        std::vector< SimLink* >             m_simLinks;
+        std::map< std::string, SimLink* >   m_simLinksMap;
+
+        bool m_isAlive;
+
+        public :
+
+        SimAgent( const std::string& name );
+
+        SimAgent() {}
+
+        void build( const std::string& filename,
+                    raisim::World* raisimWorldPtr,
+                    engine::LScene* graphicsScene );
+
+        void update();
+
+        void reset() {}
+
+        void print() {}
+
+        std::string name() { return m_name; }
+
+        void setPosition( const tysoc::TVec3& position );
+
+        void setOrientation( const tysoc::TMat3& rotation );
+
+        void setAlive( bool mode ) { m_isAlive = mode; }
+
+        bool alive() { return m_isAlive; }
+
+        tysoc::TVec3 position() { return m_worldPos; }
+
+        tysoc::TMat3 orientation() { return m_worldRot; }
+
+        tysoc::TMat4 worldTransform() { return m_worldTransform; }
+
+        std::vector< SimLink* > links() { return m_simLinks; }
     };
 
     class ITestApplication
@@ -162,6 +251,9 @@ namespace raisim
 
         std::vector< SimBody* >             m_simBodies;
         std::map< std::string, SimBody* >   m_simBodiesMap;
+
+        std::vector< SimAgent* >            m_simAgents;
+        std::map< std::string, SimAgent* >  m_simAgentsMap;
 
         bool m_isRunning;
         bool m_isTerminated;
@@ -195,6 +287,10 @@ namespace raisim
         void togglePause();
 
         SimBody* createSingleBody( const ShapeData& shapeData, bool isFree );
+        SimAgent* createSingleAgent( const std::string& name,
+                                     const std::string& filename,
+                                     const tysoc::TVec3& position,
+                                     const tysoc::TMat3& rotation );
 
         bool isTerminated() { return m_isTerminated; }
 
@@ -209,4 +305,5 @@ namespace std
 {
     std::string to_string( const raisim::eShapeType& type );
     std::string to_string( const raisim::eJointType& type );
+    std::string to_string( const raisim::ShapeData& shapeData );
 }
