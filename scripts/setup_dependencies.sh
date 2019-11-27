@@ -23,7 +23,11 @@ git clone https://github.com/wpumacay/cat1.git ext/cat1
 
 # using own imgui version to add some extra cmake-files
 echo "==> Cloning wpumacay/imgui @ github - master branch"
-git clone https://github.com/wpumacay/imgui.git ext/imgui
+git clone --branch=docking https://github.com/wpumacay/imgui.git ext/imgui
+
+# spdlog library (for our logging system)
+echo "==> Cloning gabime/spdlog @ github - master branch"
+git clone https://github.com/gabime/spdlog.git ext/spdlog
 
 # using raisim version from main repository
 echo "==> Cloning leggedrobotics/raisim @ github - master branch"

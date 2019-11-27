@@ -103,8 +103,8 @@ target_link_libraries( tysocPhysicsRaisim
 
 # Only generate samples if not using as dependency
 if ( TYSOC_RAISIM_IS_MASTER_PROJECT )
-    # Configure examples
-    add_subdirectory( examples )
-    # Configure tests
-    add_subdirectory( tests )
+    ## # Configure examples
+    ## add_subdirectory( examples )
+    ## # Configure tests
+    ## add_subdirectory( tests )
 endif()
