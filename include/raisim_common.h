@@ -8,6 +8,7 @@
 #include <utils/parsers/mjcf/mjcf.h>
 #include <utils/parsers/rlsim/rlsim.h>
 #include <utils/parsers/urdf/urdf.h>
+#include <components/data.h>
 
 // some helper functions
 #include <map>
@@ -22,8 +23,7 @@
 #include <raisim_config.h>
 
 namespace tysoc {
-namespace raisim {
 
 
 
-}}
+}

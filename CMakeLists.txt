@@ -29,6 +29,8 @@ endif()
 if ( TYSOC_RAISIM_IS_MASTER_PROJECT )
     # Configure dependencies for tysoc
     add_subdirectory( ext )
+    # Enable usage of tcmalloc in the core library
+    set( TYSOC_USE_TCMALLOC ON CACHE BOOL "Use tcmalloc from google-perftools for core build" )
     # Configure core functionality
     add_subdirectory( core )
 endif()
@@ -77,6 +79,7 @@ include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/include/" )
 include_directories( "${CMAKE_SOURCE_DIR}/core/include" )
 include_directories( "${CMAKE_SOURCE_DIR}/core/ext/json" )
 include_directories( "${CMAKE_SOURCE_DIR}/core/ext/tinyxml2" )
+include_directories( "${CMAKE_SOURCE_DIR}/ext/spdlog/include" )
 
 find_package( assimp REQUIRED )
 find_package( Eigen3 REQUIRED HINTS ${Eigen3_HINT} )
@@ -103,8 +106,8 @@ target_link_libraries( tysocPhysicsRaisim
 
 # Only generate samples if not using as dependency
 if ( TYSOC_RAISIM_IS_MASTER_PROJECT )
-    ## # Configure examples
-    ## add_subdirectory( examples )
+    # Configure examples
+    add_subdirectory( examples )
     ## # Configure tests
     ## add_subdirectory( tests )
 endif()

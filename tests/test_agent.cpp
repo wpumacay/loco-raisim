@@ -51,7 +51,7 @@ void AppExample::_onApplicationStart()
     m_samplePlanePtr = createSingleBody( _planeShapeData, false );
 
     m_sampleAgentPtr = createSingleAgent( "agent0",
-                            "/home/gregor/Documents/repos/tysoc_raisim_workspace/tysoc_raisim/core/res/xml/tests/raisim/double_pendulum.urdf",
+                            "/home/gregor/Documents/repos/tysoc_raisim_workspace/tysoc_raisim/core/res/xml/tests/raisim/walker.urdf",
                             tysoc::TVec3( 0.0, 0.0, 3.0 ),
                             tysoc::TMat3::fromEuler( { 0.0, 0.0, 0.0 } ) );
 }

@@ -4,15 +4,7 @@
 // RAISIM API functionality
 #include <raisim/World.hpp>
 // Rendering functionality from 'cat1' engine
-#include <LApp.h>
-#include <LFpsCamera.h>
-#include <LFixedCamera3d.h>
-#include <LLightDirectional.h>
-#include <LMeshBuilder.h>
-// UI functionality (from Dear ImGui)
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+#include <CEngine.h>
 // Base functionality (math and a few helpers) from tysoc-core
 #include <tysoc_common.h>
 #include <memory>
