@@ -6,13 +6,13 @@
 #include <random>
 
 std::default_random_engine              g_randomGenerator;
-std::uniform_real_distribution<double>  g_randomUniformDistribution = std::uniform_real_distribution<double>( -2.0, 2.0 );
+std::uniform_real_distribution<double>  g_randomUniformDistribution = std::uniform_real_distribution<double>( -5.0, 5.0 );
 
-#define NUM_BOXES       20
-#define NUM_SPHERES     20
-#define NUM_CYLINDERS   20
-#define NUM_CAPSULES    20
-#define NUM_MESHES      0
+#define NUM_BOXES       5
+#define NUM_SPHERES     5
+#define NUM_CYLINDERS   5
+#define NUM_CAPSULES    5
+#define NUM_MESHES      5
 
 tysoc::TBody* createSimpleBody( const std::string& name, 
                                 const std::string& type, 
@@ -60,11 +60,11 @@ tysoc::TBody* createSimpleBody( const std::string& name,
     {
         _collisionData.type = tysoc::eShapeType::MESH;
         _collisionData.size = { 0.2, 0.2, 0.2 };
-        _collisionData.filename = std::string( TYSOC_PATH_MESHES_DIR ) + "monkey.stl";
+        _collisionData.filename = std::string( TYSOC_PATH_MESHES_DIR ) + "monkey.obj";
 
         _visualData.type = tysoc::eShapeType::MESH;
         _visualData.size = { 0.2, 0.2, 0.2 };
-        _visualData.filename = std::string( TYSOC_PATH_MESHES_DIR ) + "monkey.stl";
+        _visualData.filename = std::string( TYSOC_PATH_MESHES_DIR ) + "monkey.obj";
     }
     else 
     {
@@ -141,7 +141,7 @@ int main()
     auto _scenario = new tysoc::TScenario();
     // _scenario->addTerrainGenerator( _terrainGenStatic );
 
-    auto _plane = createSimpleBody( std::string( "plane_0" ), "box", { 10.0f, 15.0f, 1.0f }, { 0.0f, 0.0f, -0.5f } );
+    auto _plane = createSimpleBody( std::string( "plane_0" ), "box", { 20.0f, 30.0f, 1.0f }, { 0.0f, 0.0f, -0.5f } );
     _scenario->addBody( _plane );
 
     for ( size_t i = 0; i < NUM_BOXES; i++ )
