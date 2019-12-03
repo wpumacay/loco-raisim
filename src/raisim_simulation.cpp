@@ -32,8 +32,8 @@ namespace tysoc
             _body->setAdapter( _bodyAdapter );
             m_bodyAdapters.push_back( _bodyAdapter );
 
-            auto _colliders = _body->collisions();
-            for ( auto _collider : _colliders )
+            auto _collider = _body->collision();
+            if ( _collider )
             {
                 auto _colliderAdapter = new TRaisimCollisionAdapter( _collider );
                 _collider->setAdapter( _colliderAdapter );

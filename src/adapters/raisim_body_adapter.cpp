@@ -22,14 +22,14 @@ namespace tysoc
         if ( !m_bodyPtr )
             return;
 
-        /* create raisim-body for single collider (@todo: support compounds in separate class) */
-        if ( m_bodyPtr->collisions().size() < 1 )
+        /* create raisim-body with the body collider */
+        auto _collider = m_bodyPtr->collision();
+        if ( !_collider )
         {
-            TYSOC_CORE_WARN( "Raisim body-adapter >>> skipped creating raisim-object body with no colliders" );
+            TYSOC_CORE_WARN( "Raisim body-adapter >>> skipped creating raisim-object body with no collider" );
             return;
         }
 
-        auto _collider = m_bodyPtr->collisions().front();
         auto _colliderData = _collider->data();
         auto _colliderType = _colliderData.type;
         double _mass = ( m_bodyPtr->data().inertialData.mass == 0.0f ) ? 
@@ -150,15 +150,16 @@ namespace tysoc
         if ( !m_bodyPtr || !m_raisimBodyRef )
             return;
 
-        auto _colliders = m_bodyPtr->collisions();
-        for ( auto _collider : _colliders )
-        {
-            if ( !_collider->adapter() )
-                continue;
+        auto _collider = m_bodyPtr->collision();
+        if ( !_collider )
+            return;
 
-            /* pass the ode collider handle to the collider-adapter  */
-            dynamic_cast< TRaisimCollisionAdapter* >( _collider->adapter() )->setRaisimOdeGeom( m_raisimBodyRef->getCollisionObject() );
-        }
+        auto _colliderAdapter = _collider->adapter();
+        if ( !_colliderAdapter )
+            return;
+
+        /* pass the ode collider handle to the collider-adapter  */
+        dynamic_cast< TRaisimCollisionAdapter* >( _colliderAdapter )->setRaisimOdeGeom( m_raisimBodyRef->getCollisionObject() );
     }
 
     extern "C" TIBodyAdapter* simulation_createBodyAdapter( TBody* bodyPtr )
