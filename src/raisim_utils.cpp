@@ -93,9 +93,21 @@ namespace utils {
         return nullptr;
     }
 
-    raisim::HeightMap* createHeightmap( raisim::World* world, const TCollisionData& colliderData, const TBodyData& bodyData )
+    raisim::HeightMap* createHeightmap( raisim::World* world, const TCollisionData& colliderData, const TBodyData& bodyData, const tysoc::TVec3& position )
     {
-        return nullptr;
+        auto& _hfdata = colliderData.hdata;
+        std::vector< double > _heights;
+        for ( size_t i = 0; i < _hfdata.heightData.size(); i++ )
+            _heights.push_back( _hfdata.heightData[i] * colliderData.size.z );
+
+        TYSOC_CORE_TRACE( "scale-x: {0}, scale-y: {1}", colliderData.size.x, colliderData.size.y );
+        TYSOC_CORE_TRACE( "n-width: {0}, n-depth: {1}", _hfdata.nWidthSamples, _hfdata.nDepthSamples );
+        double _scaleX = colliderData.size.x;
+        double _scaleY = colliderData.size.y;
+        double _centerX = position.x; 
+        double _centerY = position.y;
+        return world->addHeightMap( _hfdata.nWidthSamples, _hfdata.nDepthSamples, 
+                                    _scaleX, _scaleY, _centerX, _centerY, _heights );
     }
 
     raisim::Mat<3, 3> _computeInertiaMatrixAABB( float mass, const TVec3& aabbMin, const TVec3& aabbMax )

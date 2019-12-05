@@ -9,6 +9,7 @@ namespace tysoc
     {
         m_raisimBodyRef = nullptr;
         m_raisimWorldRef = nullptr;
+        m_isHeightfield = false;
     }
 
     TRaisimBodyAdapter::~TRaisimBodyAdapter()
@@ -30,7 +31,7 @@ namespace tysoc
             return;
         }
 
-        auto _colliderData = _collider->data();
+        const auto& _colliderData = _collider->dataRef();
         auto _colliderType = _colliderData.type;
         double _mass = ( m_bodyPtr->data().inertialData.mass == 0.0f ) ? 
                             tysoc::computeVolumeFromShape( _colliderData ) : 
@@ -55,7 +56,7 @@ namespace tysoc
         else if ( _colliderType == eShapeType::MESH )
             m_raisimBodyRef = utils::createMesh( m_raisimWorldRef, _colliderData, m_bodyPtr->data() );
         else if ( _colliderType == eShapeType::HFIELD )
-            m_raisimBodyRef = utils::createHeightmap( m_raisimWorldRef, _colliderData, m_bodyPtr->data() );
+            m_raisimBodyRef = utils::createHeightmap( m_raisimWorldRef, _colliderData, m_bodyPtr->data(), m_bodyPtr->tf0().getPosition() );
 
         if ( !m_raisimBodyRef )
         {
@@ -72,9 +73,13 @@ namespace tysoc
         else if ( _bodyType == eDynamicsType::DYNAMIC )
             m_raisimBodyRef->setBodyType( raisim::BodyType::DYNAMIC );
 
-        auto _initialPose = m_bodyPtr->tf0();
-        m_raisimBodyRef->setPose( utils::toEigenVec3( _initialPose.getPosition() ),
-                                  utils::toEigenMat3( _initialPose.getRotation() ) );
+        m_isHeightfield = ( _colliderType == eShapeType::HFIELD );
+        if ( !m_isHeightfield )
+        {
+            auto _initialPose = m_bodyPtr->tf0();
+            m_raisimBodyRef->setPose( utils::toEigenVec3( _initialPose.getPosition() ),
+                                      utils::toEigenMat3( _initialPose.getRotation() ) );
+        }
     }
 
     void TRaisimBodyAdapter::reset()
@@ -82,12 +87,18 @@ namespace tysoc
         if ( !m_bodyPtr || !m_raisimBodyRef )
             return;
 
-        auto _initialPose = m_bodyPtr->tf0();
-        m_raisimBodyRef->setPose( utils::toEigenVec3( _initialPose.getPosition() ),
-                                  utils::toEigenMat3( _initialPose.getRotation() ) );
+        if ( !m_isHeightfield )
+        {
+            auto _initialPose = m_bodyPtr->tf0();
+            m_raisimBodyRef->setPose( utils::toEigenVec3( _initialPose.getPosition() ),
+                                      utils::toEigenMat3( _initialPose.getRotation() ) );
+        }
 
-        // zero lin. and ang. vel.   |----linear---|----angular---|
-        m_raisimBodyRef->setVelocity( 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 );
+        if ( m_bodyPtr->dyntype() != eDynamicsType::STATIC )
+        {
+            // zero lin. and ang. vel.   |----linear---|----angular---|
+            m_raisimBodyRef->setVelocity( 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 );
+        }
     }
 
     void TRaisimBodyAdapter::update()
@@ -100,7 +111,8 @@ namespace tysoc
         if ( !m_raisimBodyRef )
             return;
 
-        m_raisimBodyRef->setPosition( utils::toEigenVec3( position ) );
+        if ( !m_isHeightfield )
+            m_raisimBodyRef->setPosition( utils::toEigenVec3( position ) );
     }
 
     void TRaisimBodyAdapter::setRotation( const TMat3& rotation )
@@ -108,7 +120,8 @@ namespace tysoc
         if ( !m_raisimBodyRef )
             return;
 
-        m_raisimBodyRef->setOrientation( utils::toEigenMat3( rotation ) );
+        if ( !m_isHeightfield )
+            m_raisimBodyRef->setOrientation( utils::toEigenMat3( rotation ) );
     }
 
     void TRaisimBodyAdapter::setTransform( const TMat4& transform )
@@ -116,8 +129,9 @@ namespace tysoc
         if ( !m_raisimBodyRef )
             return;
 
-        m_raisimBodyRef->setPose( utils::toEigenVec3( transform.getPosition() ),
-                                  utils::toEigenMat3( transform.getRotation() ) );
+        if ( !m_isHeightfield )
+            m_raisimBodyRef->setPose( utils::toEigenVec3( transform.getPosition() ),
+                                      utils::toEigenMat3( transform.getRotation() ) );
     }
 
     void TRaisimBodyAdapter::getPosition( TVec3& dstPosition )
@@ -125,7 +139,10 @@ namespace tysoc
         if ( !m_raisimBodyRef )
             return;
 
-        dstPosition = utils::fromEigenVec3( m_raisimBodyRef->getPosition() );
+        if ( !m_isHeightfield )
+            dstPosition = utils::fromEigenVec3( m_raisimBodyRef->getPosition() );
+        else
+            dstPosition = m_bodyPtr->tf0().getPosition();
     }
 
     void TRaisimBodyAdapter::getRotation( TMat3& dstRotation )
@@ -133,7 +150,10 @@ namespace tysoc
         if ( !m_raisimBodyRef )
             return;
 
-        dstRotation = utils::fromEigenMat3( m_raisimBodyRef->getRotationMatrix() );
+        if ( !m_isHeightfield )
+            dstRotation = utils::fromEigenMat3( m_raisimBodyRef->getRotationMatrix() );
+        else
+            dstRotation = m_bodyPtr->tf0().getRotation();
     }
 
     void TRaisimBodyAdapter::getTransform( TMat4& dstTransform )
@@ -141,8 +161,15 @@ namespace tysoc
         if ( !m_raisimBodyRef )
             return;
 
-        dstTransform.setPosition( utils::fromEigenVec3( m_raisimBodyRef->getPosition() ) );
-        dstTransform.setRotation( utils::fromEigenMat3( m_raisimBodyRef->getRotationMatrix() ) );
+        if ( !m_isHeightfield )
+        {
+            dstTransform.setPosition( utils::fromEigenVec3( m_raisimBodyRef->getPosition() ) );
+            dstTransform.setRotation( utils::fromEigenMat3( m_raisimBodyRef->getRotationMatrix() ) );
+        }
+        else
+        {
+            dstTransform = m_bodyPtr->tf0();
+        }
     }
 
     void TRaisimBodyAdapter::onFinishedCreatingResources()

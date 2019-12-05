@@ -13,7 +13,7 @@ namespace utils {
 
     raisim::Mesh* createMesh( raisim::World* world, const TCollisionData& shapeData, const TBodyData& bodyData );
     raisim::Mesh* createEllipsoid( raisim::World* world, const TCollisionData& shapeData, const TBodyData& bodyData );
-    raisim::HeightMap* createHeightmap( raisim::World* world, const TCollisionData& shapeData, const TBodyData& bodyData );
+    raisim::HeightMap* createHeightmap( raisim::World* world, const TCollisionData& shapeData, const TBodyData& bodyData, const tysoc::TVec3& position );
 
     raisim::Mat<3, 3> _computeInertiaMatrixAABB( float mass, const TVec3& aabbMin, const TVec3& aabbMax );
 
