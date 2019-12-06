@@ -17,7 +17,7 @@ tysoc::TBody* createHfield( const std::string& name, const tysoc::TVec3& positio
 {
     const int nxSamples = 50;
     const int nySamples = 50;
-    const float xExtent = 10.0f;
+    const float xExtent = 20.0f;
     const float yExtent = 10.0f;
 
     float _maxHeight = 0.0f;

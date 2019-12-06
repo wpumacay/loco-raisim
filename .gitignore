@@ -16,7 +16,7 @@ build/
 _legacy/
 dist/
 pytysoc.egg-info/
-tysoc_dart.egg-info/
+tysoc_raisim.egg-info/
 
 # dependencies-exclusions
 ext/cat1
