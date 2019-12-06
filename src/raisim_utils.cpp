@@ -54,10 +54,10 @@ namespace utils {
             auto _aabbMax = TVec3( _aabb.second.x * colliderData.size.x, _aabb.second.y * colliderData.size.y, _aabb.second.z * colliderData.size.z );
             _meshInertia = _computeInertiaMatrixAABB( (float)_meshMass, _aabbMin, _aabbMax );
 
-            TYSOC_CORE_TRACE( "mass: {0}, inertia: [{1},{2},{3},{4},{5},{6}], aabb-min: {7}, aabb-max: {8}", _meshMass,
-                              _meshInertia(0, 0), _meshInertia(1, 1), _meshInertia(2, 2),
-                              _meshInertia(0, 1), _meshInertia(0, 2), _meshInertia(1, 2),
-                              TVec3::toString( _aabbMin ), TVec3::toString( _aabbMax ) );
+            //// TYSOC_CORE_TRACE( "mass: {0}, inertia: [{1},{2},{3},{4},{5},{6}], aabb-min: {7}, aabb-max: {8}", _meshMass,
+            ////                   _meshInertia(0, 0), _meshInertia(1, 1), _meshInertia(2, 2),
+            ////                   _meshInertia(0, 1), _meshInertia(0, 2), _meshInertia(1, 2),
+            ////                   TVec3::toString( _aabbMin ), TVec3::toString( _aabbMax ) );
         }
         else
         {
@@ -95,19 +95,31 @@ namespace utils {
 
     raisim::HeightMap* createHeightmap( raisim::World* world, const TCollisionData& colliderData, const TBodyData& bodyData, const tysoc::TVec3& position )
     {
+        /* preprocess the heightmap data (unnormalized data required), and offset the heights by the z-position (issue #33) */
         auto& _hfdata = colliderData.hdata;
-        std::vector< double > _heights;
-        for ( size_t i = 0; i < _hfdata.heightData.size(); i++ )
-            _heights.push_back( _hfdata.heightData[i] * colliderData.size.z );
+        std::vector< double > _heights( _hfdata.nWidthSamples * _hfdata.nDepthSamples, 0.0 );
+        for ( int i = 0; i < _hfdata.nWidthSamples; i++ )
+        {
+            for ( int j = 0; j < _hfdata.nDepthSamples; j++ )
+            {
+                int _pindexUserBuffer = i + j * _hfdata.nWidthSamples;
+                int _pindexRaisimBuffer = j + i * _hfdata.nDepthSamples;
+                _heights[_pindexRaisimBuffer] = _hfdata.heightData[_pindexUserBuffer] * colliderData.size.z + position.z;
+            }
+        }
 
-        TYSOC_CORE_TRACE( "scale-x: {0}, scale-y: {1}", colliderData.size.x, colliderData.size.y );
-        TYSOC_CORE_TRACE( "n-width: {0}, n-depth: {1}", _hfdata.nWidthSamples, _hfdata.nDepthSamples );
-        double _scaleX = colliderData.size.x;
-        double _scaleY = colliderData.size.y;
-        double _centerX = position.x; 
-        double _centerY = position.y;
-        return world->addHeightMap( _hfdata.nWidthSamples, _hfdata.nDepthSamples, 
-                                    _scaleX, _scaleY, _centerX, _centerY, _heights );
+        //// TYSOC_CORE_TRACE( "scale-x: {0}, scale-y: {1}", colliderData.size.x, colliderData.size.y );
+        //// TYSOC_CORE_TRACE( "n-width: {0}, n-depth: {1}", _hfdata.nWidthSamples, _hfdata.nDepthSamples );
+
+        /* create the actual raisim heightmap resource */
+        const int _nSamplesX = _hfdata.nWidthSamples;
+        const int _nSamplesY = _hfdata.nDepthSamples;
+        const double _scaleX = colliderData.size.x; // in this backend, scale is the actual extent, not step size
+        const double _scaleY = colliderData.size.y; // in this backend, scale is the actual extent, not step size
+        const double _centerX = position.x; 
+        const double _centerY = position.y;
+
+        return world->addHeightMap( _nSamplesX, _nSamplesY, _scaleX, _scaleY, _centerX, _centerY, _heights );
     }
 
     raisim::Mat<3, 3> _computeInertiaMatrixAABB( float mass, const TVec3& aabbMin, const TVec3& aabbMax )
