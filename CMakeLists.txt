@@ -1,7 +1,12 @@
-
 cmake_minimum_required( VERSION 3.0.0 )
 
-set( CMAKE_BUILD_TYPE Debug )
+project( tysocRaisim )
+
+# in case nobody set the project type, set it (parent project might have set it for all)
+if ( NOT CMAKE_BUILD_TYPE )
+    set( CMAKE_BUILD_TYPE Debug )
+endif()
+
 set( CMAKE_CXX_STANDARD 11 )
 set( CMAKE_CXX_FLAGS " -g ${CMAKE_CXX_FLAGS}" )
 
@@ -29,8 +34,6 @@ endif()
 if ( TYSOC_RAISIM_IS_MASTER_PROJECT )
     # Configure dependencies for tysoc
     add_subdirectory( ext )
-    # Enable usage of tcmalloc in the core library
-    set( TYSOC_USE_TCMALLOC ON CACHE BOOL "Use tcmalloc from google-perftools for core build" )
     # Configure core functionality
     add_subdirectory( core )
 endif()
@@ -102,8 +105,7 @@ add_library( tysocPhysicsRaisim SHARED
 target_link_libraries( tysocPhysicsRaisim
                        tysocCore
                        assimp
-                       raisim::raisim
-                       tcmalloc )
+                       raisim::raisim )
 
 # ******************************************************************************
 

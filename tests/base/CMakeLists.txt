@@ -13,5 +13,4 @@ target_link_libraries( test_interface
                        tysocCore
                        cat1
                        imgui
-                       raisim::raisim
-                       tcmalloc )
+                       raisim::raisim )

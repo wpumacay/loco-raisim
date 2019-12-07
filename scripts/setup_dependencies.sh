@@ -10,7 +10,7 @@ echo "==> Installing build tools"
 sudo apt-get install make cmake pkg-config
 
 echo "==> Extra dependencies to configure raisim in some systems"
-sudo apt-get install libgoogle-perftools-dev
+sudo apt-get install libeigen3-dev
 
 echo "==> Installing dependencies for renderer"
 sudo apt-get install libassimp-dev libglfw3-dev libglew-dev
