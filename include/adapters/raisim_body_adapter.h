@@ -51,9 +51,6 @@ namespace tysoc
 
         /* reference to-single-object raisim resource (owned by world), used to read/set simulation state */
         raisim::SingleBodyObject* m_raisimBodyRef;
-
-        /* flag to check if using a hfield or not (to handle some discrepancies between hfields and every other primitive) */
-        bool m_isHeightfield;
     };
 
 }

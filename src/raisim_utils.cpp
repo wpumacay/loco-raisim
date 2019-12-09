@@ -93,33 +93,27 @@ namespace utils {
         return nullptr;
     }
 
-    raisim::HeightMap* createHeightmap( raisim::World* world, const TCollisionData& colliderData, const TBodyData& bodyData, const tysoc::TVec3& position )
+    raisim::HeightMap* createHeightmap( raisim::World* world, const TCollisionData& colliderData, const TBodyData& bodyData )
     {
         /* preprocess the heightmap data (unnormalized data required), and offset the heights by the z-position (issue #33) */
         auto& _hfdata = colliderData.hdata;
-        std::vector< double > _heights( _hfdata.nWidthSamples * _hfdata.nDepthSamples, 0.0 );
-        for ( int i = 0; i < _hfdata.nWidthSamples; i++ )
-        {
-            for ( int j = 0; j < _hfdata.nDepthSamples; j++ )
-            {
-                int _pindexUserBuffer = i + j * _hfdata.nWidthSamples;
-                int _pindexRaisimBuffer = j + i * _hfdata.nDepthSamples;
-                _heights[_pindexRaisimBuffer] = _hfdata.heightData[_pindexUserBuffer] * colliderData.size.z + position.z;
-            }
-        }
+        const int _xSamples = _hfdata.nWidthSamples;
+        const int _ySamples = _hfdata.nDepthSamples;
+        std::vector< double > _heights( _xSamples * _ySamples, 0.0 );
+        for ( int j = 0; j < _xSamples; j++ )
+            for ( int i = 0; i < _ySamples; i++ )
+                _heights[i * _xSamples + j] = _hfdata.heightData[i * _xSamples + j] * colliderData.size.z;
 
         //// TYSOC_CORE_TRACE( "scale-x: {0}, scale-y: {1}", colliderData.size.x, colliderData.size.y );
         //// TYSOC_CORE_TRACE( "n-width: {0}, n-depth: {1}", _hfdata.nWidthSamples, _hfdata.nDepthSamples );
 
         /* create the actual raisim heightmap resource */
-        const int _nSamplesX = _hfdata.nWidthSamples;
-        const int _nSamplesY = _hfdata.nDepthSamples;
         const double _scaleX = colliderData.size.x; // in this backend, scale is the actual extent, not step size
         const double _scaleY = colliderData.size.y; // in this backend, scale is the actual extent, not step size
-        const double _centerX = position.x; 
-        const double _centerY = position.y;
+        const double _centerX = 0.0;
+        const double _centerY = 0.0;
 
-        return world->addHeightMap( _nSamplesX, _nSamplesY, _scaleX, _scaleY, _centerX, _centerY, _heights );
+        return world->addHeightMap( _xSamples, _ySamples, _scaleX, _scaleY, 0.0, 0.0, _heights );
     }
 
     raisim::Mat<3, 3> _computeInertiaMatrixAABB( float mass, const TVec3& aabbMin, const TVec3& aabbMax )
