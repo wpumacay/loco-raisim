@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
 
-echo "==> Extra dependencies to configure raisim in some systems"
-sudo apt-get install libeigen3-dev
+GIT_DEPS_REPO=(tiny_math pybind11 imgui spdlog tiny_renderer tysoc googletest raisimLib)
+GIT_DEPS_USER=(wpumacay RobotLocomotion wpumacay gabime wpumacay wpumacay google leggedrobotics)
+GIT_DEPS_BRANCH=(master drake docking v1.x master master master master)
+GIT_DEPS_DEST=(ext/tiny_math ext/pybind11 ext/imgui ext/spdlog ext/tiny_renderer core ext/googletest ext/raisim)
 
-GIT_DEPS_REPO=(tiny_math pybind11 imgui spdlog tiny_renderer tysoc raisimLib)
-GIT_DEPS_USER=(wpumacay pybind wpumacay gabime wpumacay wpumacay leggedrobotics)
-GIT_DEPS_BRANCH=(tysoc-stable master docking v1.x tysoc-stable master master)
-GIT_DEPS_DEST=(ext/tiny_math ext/pybind11 ext/imgui ext/spdlog ext/tiny_renderer core ext/raisim)
-
-for i in {0..6}
+for i in {0..7}
 do
     USER=${GIT_DEPS_USER[$i]}
     REPO=${GIT_DEPS_REPO[$i]}
