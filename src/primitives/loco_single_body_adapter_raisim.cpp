@@ -23,6 +23,8 @@ namespace raisimlib {
 
     TRaisimSingleBodyAdapter::~TRaisimSingleBodyAdapter()
     {
+        const std::string name = ( m_BodyRef ) ? m_BodyRef->name() : "undefined";
+
         if ( m_BodyRef )
             m_BodyRef->DetachSim();
         m_BodyRef = nullptr;
@@ -32,9 +34,9 @@ namespace raisimlib {
 
     #if defined( LOCO_CORE_USE_TRACK_ALLOCS )
         if ( TLogger::IsActive() )
-            LOCO_CORE_TRACE( "Loco::Allocs: Destroyed TRaisimSingleBodyAdapter {0} @ {1}", m_BodyRef->name(), loco::PointerToHexAddress( this ) );
+            LOCO_CORE_TRACE( "Loco::Allocs: Destroyed TRaisimSingleBodyAdapter {0} @ {1}", name, loco::PointerToHexAddress( this ) );
         else
-            std::cout << "Loco::Allocs: Destroyed TRaisimSingleBodyAdapter " << m_BodyRef->name() << " @ " << loco::PointerToHexAddress( this ) << std::endl;
+            std::cout << "Loco::Allocs: Destroyed TRaisimSingleBodyAdapter " << name << " @ " << loco::PointerToHexAddress( this ) << std::endl;
     #endif
     }
 
