@@ -97,7 +97,9 @@ find_package( raisim CONFIG REQUIRED )
 
 set( LOCO_RAISIM_SRCS
      "${CMAKE_CURRENT_SOURCE_DIR}/src/loco_common_raisim.cpp"
-     "${CMAKE_CURRENT_SOURCE_DIR}/src/loco_simulation_raisim.cpp" )
+     "${CMAKE_CURRENT_SOURCE_DIR}/src/loco_simulation_raisim.cpp"
+     "${CMAKE_CURRENT_SOURCE_DIR}/src/primitives/loco_single_body_collider_adapter_raisim.cpp"
+     "${CMAKE_CURRENT_SOURCE_DIR}/src/primitives/loco_single_body_adapter_raisim.cpp" )
 
 set( LOCO_RAISIM_INCLUDE_DIRS
      "${CMAKE_CURRENT_SOURCE_DIR}/include"
