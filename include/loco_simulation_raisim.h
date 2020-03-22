@@ -3,6 +3,9 @@
 #include <loco_common_raisim.h>
 #include <loco_simulation.h>
 
+#include <primitives/loco_single_body_collider_adapter_raisim.h>
+#include <primitives/loco_single_body_adapter_raisim.h>
+
 namespace loco {
 namespace raisimlib {
 
@@ -18,6 +21,10 @@ namespace raisimlib {
 
         ~TRaisimSimulation();
 
+        raisim::World* raisim_world() { return m_RaisimWorld.get(); }
+
+        const raisim::World* raisim_world() const { return m_RaisimWorld.get(); }
+
     protected :
 
         bool _InitializeInternal() override;
@@ -32,7 +39,17 @@ namespace raisimlib {
 
     private :
 
-        std::unique_ptr<raisim::World> m_raisimWorld;
+        void _CollectSingleBodyAdapters();
+
+        //// void _CollectCompoundAdapters();
+
+        //// void _CollectKintreeAdapters();
+
+        //// void _CollectTerrainGeneratorAdapters();
+
+    private :
+
+        std::unique_ptr<raisim::World> m_RaisimWorld;
 
     };
 

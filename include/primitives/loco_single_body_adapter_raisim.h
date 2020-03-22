@@ -47,7 +47,7 @@ namespace raisimlib {
 
         void GetAngularVelocity( TVec3& dst_angular_vel ) override;
 
-        void SetRaisimWorld( raisim::World* raisim_world_ref );
+        void SetRaisimWorld( raisim::World* raisim_world_ref ) { m_RaisimWorldRef = raisim_world_ref; }
 
         raisim::SingleBodyObject* raisim_body() { return m_RaisimBodyRef; }
 

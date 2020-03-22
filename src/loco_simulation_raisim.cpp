@@ -9,9 +9,13 @@ namespace raisimlib {
     {
         m_backendId = "RAISIM";
 
-        m_raisimWorld = std::make_unique<raisim::World>();
-        m_raisimWorld->setTimeStep( 0.002 );
-        m_raisimWorld->setGravity( vec3_to_raisim( { 0, 0, -9.81 } ) );
+        m_RaisimWorld = std::make_unique<raisim::World>(); m_RaisimWorld->setTimeStep( 0.002 );
+        m_RaisimWorld->setGravity( vec3_to_raisim( { 0, 0, -9.81 } ) );
+
+        _CollectSingleBodyAdapters();
+        //// _CollectCompoundAdapters();
+        //// _CollectKintreeAdapters();
+        //// _CollectTerrainGeneratorsAdapters();
 
     #if defined( LOCO_CORE_USE_TRACK_ALLOCS )
         if ( TLogger::IsActive() )
@@ -23,7 +27,7 @@ namespace raisimlib {
 
     TRaisimSimulation::~TRaisimSimulation()
     {
-        m_raisimWorld = nullptr;
+        m_RaisimWorld = nullptr;
 
     #if defined( LOCO_CORE_USE_TRACK_ALLOCS )
         if ( TLogger::IsActive() )
@@ -33,14 +37,35 @@ namespace raisimlib {
     #endif
     }
 
+    void TRaisimSimulation::_CollectSingleBodyAdapters()
+    {
+        auto single_bodies = m_scenarioRef->GetSingleBodiesList();
+        for ( auto single_body : single_bodies )
+        {
+            auto single_body_adapter = std::make_unique<TRaisimSingleBodyAdapter>( single_body );
+            single_body_adapter->SetRaisimWorld( m_RaisimWorld.get() );
+            single_body->SetBodyAdapter( single_body_adapter.get() );
+            m_singleBodyAdapters.push_back( std::move( single_body_adapter ) );
+
+            auto collider = single_body->collider();
+            LOCO_CORE_ASSERT( collider, "TRaisimSimulation::_CollectSingleBodyAdapters >>> single-body {0} \
+                              doesn't have an associated collider", single_body->name() );
+
+            auto collider_adapter = std::make_unique<TRaisimSingleBodyColliderAdapter>( collider );
+            collider_adapter->SetRaisimWorld( m_RaisimWorld.get() );
+            collider->SetColliderAdapter( collider_adapter.get() );
+            m_collisionAdapters.push_back( std::move( collider_adapter ) );
+        }
+    }
+
     bool TRaisimSimulation::_InitializeInternal()
     {
         // Collect raisim-resources from the adapters and assemble any required resources
         // @todo: implement-me ...
 
-        LOCO_CORE_TRACE( "Raisim-backend >>> gravity    : {0}", ToString( vec3_from_eigen( m_raisimWorld->getGravity().e() ) ) );
-        LOCO_CORE_TRACE( "Raisim-backend >>> time-step  : {0}", std::to_string( m_raisimWorld->getTimeStep() ) );
-        LOCO_CORE_TRACE( "Raisim-backend >>> num-objs   : {0}", std::to_string( m_raisimWorld->getObjList().size() ) );
+        LOCO_CORE_TRACE( "Raisim-backend >>> gravity    : {0}", ToString( vec3_from_eigen( m_RaisimWorld->getGravity().e() ) ) );
+        LOCO_CORE_TRACE( "Raisim-backend >>> time-step  : {0}", std::to_string( m_RaisimWorld->getTimeStep() ) );
+        LOCO_CORE_TRACE( "Raisim-backend >>> num-objs   : {0}", std::to_string( m_RaisimWorld->getObjList().size() ) );
 
         return true;
     }
@@ -53,9 +78,9 @@ namespace raisimlib {
     void TRaisimSimulation::_SimStepInternal()
     {
         const double target_steptime = 1.0 / 60.0;
-        const double sim_start = m_raisimWorld->getWorldTime();
-        while ( m_raisimWorld->getWorldTime() - sim_start < target_steptime )
-            m_raisimWorld->integrate();
+        const double sim_start = m_RaisimWorld->getWorldTime();
+        while ( m_RaisimWorld->getWorldTime() - sim_start < target_steptime )
+            m_RaisimWorld->integrate();
     }
 
     void TRaisimSimulation::_PostStepInternal()
